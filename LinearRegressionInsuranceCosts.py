@@ -44,6 +44,7 @@ df["smoker"] = encoded_lables
 #list(le.inverse_transform(encoded_lables))
 
 # %%
+# Create train and test split
 X = df.drop('charges',axis=1) # Independet variable
 y = df['charges'] # dependent variable
 
