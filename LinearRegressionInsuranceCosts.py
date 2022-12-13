@@ -84,6 +84,7 @@ with mlflow.start_run():
 
 
 # %%
+# Inference with logged mlflow model
 logged_model = 'runs:/1db694d0b5df45bfae95abc79a884e4d/lr_model'
 
 # Load model as a PyFuncModel.
@@ -96,4 +97,26 @@ smoker = 1
 
 charge = round(loaded_model.predict([[age, bmi, children, smoker]])[0],2)
 print(str(charge) + " will be charged.")
+
+
 # %%
+# Test serving
+import json
+import requests
+
+dataset = X_test
+
+ds_dict = dataset.to_dict(orient='split')
+del ds_dict["index"]
+del ds_dict["columns"]
+ds_dict["inputs"] = ds_dict.pop("data")
+
+data_json = json.dumps(ds_dict, allow_nan=True)
+
+url = 'https://adb-5005285748743411.11.azuredatabricks.net/model/LR%20Tech%20Talk%2002/1/invocations'
+headers = {'Authorization': f'Bearer {"dapi0fab976aad7153e0e6c40185ac1e4333"}', 'Content-Type': 'application/json'}
+
+response = requests.request(method='POST', headers=headers, url=url, data=data_json)
+if response.status_code != 200:
+    raise Exception(f'Request failed with status {response.status_code}, {response.text}')
+print(response.json())
